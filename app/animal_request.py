@@ -1,5 +1,3 @@
-from http.client import HTTPException
-
 import psycopg2
 import requests
 import time
@@ -43,7 +41,7 @@ while True:
             json_response = response.json()
             d[i[1]] = d.setdefault(i[1], []) + [animal_type[json_response['CLASS_NAME']]]
 
-        #    print(d)
+        #print(d)
 
         # проходим по словарю. Из пары ключ-значение вида 1776: [1, 2, 1, 2, 1, 1] создаём ключ-значение вида 1776: 1
         for key, value in d.items():
@@ -55,7 +53,7 @@ while True:
         # заносим данные в результирующий кортеж в виде ((1, 1842), (1, 1843), (1, 1850))
         for key, value in d.items():
             result += (value, key),
-        #        print(result)
+        #print(result)
 
         # обращаемся к бд и меняем в таблице 'pets' значения null в колонке 'animal_id' на категорию животного (полученную в результате работы ML-приложения)
         # где id.pets равно второму значению каждого кортежа внутри result.
