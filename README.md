@@ -4,13 +4,6 @@
 
 Написано на Python с использованием библиотеки psycopg2 и requests
 
- 
-
-
-# Приложение для подкачки изображений с сайтов приютов
-
-Написано на Python с использованием библиотеки: FastAPI
-
 ## Для запуска в контейнере
 ```
 docker-compose up --build -d
@@ -22,7 +15,7 @@ docker-compose up --build -d
 ```
 (windows)
 python -m venv venv
-.\venv\Script\sctivate
+.\venv\Script\activate
 
 (linux/macOS)
 python3 -m venv venv
@@ -34,5 +27,5 @@ pip install -r req.txt
 ```
 Запустите приложение
 ```
-uvicorn main:app --host 0.0.0.0 --port 8585
+python animal_request.py
 ```
