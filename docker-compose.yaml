@@ -1,0 +1,10 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+    command: python ./animal_request.py
+#    volumes:
+#      - ./static:/usr/src/app/static
+    ports:
+      - 8888:8888
