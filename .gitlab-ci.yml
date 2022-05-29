@@ -1,0 +1,28 @@
+image: alpine:latest
+
+stages:
+    - build
+
+before_script:
+  - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )' 
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 600 ~/.ssh
+  - ssh-keyscan $SERVER_ADDRESS >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
+BuildApp:
+    stage: build
+    tags:
+        - "ff_linux"
+    script:
+        - ssh $SERVER_USERNAME@$SERVER_ADDRESS "
+            if [[ ! -e $CI_PROJECT_NAME ]]; 
+                then echo "Repository is not found. Please clone the repository manually to the server first" && exit 1; 
+            fi &&
+            cd $CI_PROJECT_NAME &&
+            git checkout $CI_COMMIT_BRANCH &&
+            git pull &&
+            docker compose up --build -d
+            "
