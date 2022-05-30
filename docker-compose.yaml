@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-    command: python ./animal_request.py
+    command: python ./main.py
 #    volumes:
 #      - ./static:/usr/src/app/static
     ports:
