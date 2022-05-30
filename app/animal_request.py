@@ -45,7 +45,7 @@ while True:
         cursor.close()
         conn.close()
 
-#        print(d)
+        print(d)
 
         # проходим по словарю. Из пары ключ-значение вида 1776: [1, 2, 1, 2, 1, 1] создаём ключ-значение вида 1776: 1
         for key, value in d.items():

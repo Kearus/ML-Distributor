@@ -74,6 +74,7 @@ while True:
 
                 # полученный результат переводим в json-формат и затем в словарь вида ключ-значение 1776: [1, 2, 1, 2, 1, 1]
                 json_response = response.json()
+                print(json_response)
                 d[i[1]] = d.setdefault(i[1], []) + [breeds[json_response['breed']]]
 
             if i[2] == 2: # если это кошка, то отправляем запрос в сервис, определяющий породы кошек
@@ -81,11 +82,13 @@ while True:
                                          json={'img_path': i[0]},
                                         )
 
+                print(json_response)
+
                 # полученный результат переводим в json-формат и затем в словарь вида ключ-значение 1776: [1, 2, 1, 2, 1, 1]
                 json_response = response.json()
                 d[i[1]] = d.setdefault(i[1], []) + [breeds[json_response['breed']]]
 
-#        print(d)
+        print(d)
         cursor.close()
         conn.close()
 
