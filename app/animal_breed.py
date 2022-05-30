@@ -59,7 +59,7 @@ while True:
         cursor.execute("""SELECT images.external_path, pets.id, pets.animal_id FROM images 
                           join pets_images on images.id = pets_images.image_id 
                           join pets on pets_images.pet_id = pets.id
-                          where pets.breed_id = 4
+                          where pets.breed_id = 1
                           order by pets.id
                           """)
 
