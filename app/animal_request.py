@@ -57,7 +57,7 @@ while True:
         # заносим данные в результирующий кортеж в виде ((1, 1842), (1, 1843), (1, 1850))
         for key, value in d.items():
             result += (value, key),
-#        print(result)
+        print(result)
 
         conn = psycopg2.connect(dbname=dbname, user=user,
                                 password=password, host=host, port=port)
