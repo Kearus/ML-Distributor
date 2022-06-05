@@ -35,17 +35,21 @@ while True:
         # проходим построчно по полученному запросу к бд
         for i in cursor:
             #  отправляем ссылки с фото животных в ML-приложение для определения типа животного
-            response = requests.post(link_types,
+            try:
+                response = requests.post(link_types,
                                      json={'img_path': i[0]},
                                      )
             # полученный результат переводим в json-формат и затем в словарь вида ключ-значение 1776: [1, 2, 1, 2, 1, 1]
-            json_response = response.json()
-            d[i[1]] = d.setdefault(i[1], []) + [animal_type[json_response['class_name']]]
+                json_response = response.json()
+                d[i[1]] = d.setdefault(i[1], []) + [animal_type[json_response['class_name']]]
+            except Exception as ex:
+                print(ex)
+#            print(d)
 
         cursor.close()
         conn.close()
 
-        print(d)
+#        print(d)
 
         # проходим по словарю. Из пары ключ-значение вида 1776: [1, 2, 1, 2, 1, 1] создаём ключ-значение вида 1776: 1
         for key, value in d.items():
@@ -57,7 +61,7 @@ while True:
         # заносим данные в результирующий кортеж в виде ((1, 1842), (1, 1843), (1, 1850))
         for key, value in d.items():
             result += (value, key),
-        print(result)
+#        print(result)
 
         conn = psycopg2.connect(dbname=dbname, user=user,
                                 password=password, host=host, port=port)
