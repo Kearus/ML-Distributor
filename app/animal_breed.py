@@ -72,77 +72,80 @@ def get_smoothed_pb(probabilities):
     p_vector = normalize(p_vector)
     return p_vector
             
-
+def get_breeds():
 # бесконечный цикл работы приложения
-while True:
-    try:
-        # устанавливаем подключение к бд
-        conn = psycopg2.connect(dbname=dbname, user=user,
-                                password=password, host=host, port=port)
-        cursor = conn.cursor()
+    while True:
+        try:
+            # устанавливаем подключение к бд
+            conn = psycopg2.connect(dbname=dbname, user=user,
+                                    password=password, host=host, port=port)
+            cursor = conn.cursor()
 
-        # делаем запрос к бд, собираем ссылки на фото и id по всем животным из таблицы 'pets', у которых не указана порода (значение 1 в колонке 'breed_id')
-        cursor.execute("""SELECT images.external_path, pets.id, pets.animal_id FROM images 
-                          join pets_images on images.id = pets_images.image_id 
-                          join pets on pets_images.pet_id = pets.id
-                          where pets.breed_id = 1
-                          order by pets.id
-                          """)
+            # делаем запрос к бд, собираем ссылки на фото и id по всем животным из таблицы 'pets', у которых не указана порода (значение 1 в колонке 'breed_id')
+            cursor.execute("""SELECT images.external_path, pets.id, pets.animal_id FROM images 
+                              join pets_images on images.id = pets_images.image_id 
+                              join pets on pets_images.pet_id = pets.id
+                              where pets.breed_id = 1
+                              order by pets.id
+                              """)
 
-        d = {} # словарь для хранения результатов работы ML приложения. Ключ - id животного, значения в виде списка ответов ML по каждому животному
+            d = {} # словарь для хранения результатов работы ML приложения. Ключ - id животного, значения в виде списка ответов ML по каждому животному
 
-        # проходим построчно по полученному запросу к бд
-        for i in cursor:
-            try:
-                if i[2] == 1: # если это собака, то отправляем запрос в сервис, определяющий породы собак
-                    response = requests.post(link_dogs, json={'img_path': i[0]})
-                    json_response = response.json()
-                    d[i[1]] = d.setdefault(i[1], []) + [[breeds_dogs[json_response['breed']], float(json_response['probability'])]]
-                elif i[2] == 2: # если это кошка, то отправляем запрос в сервис, определяющий породы кошек
-                    response = requests.post(link_cats, json={'img_path': i[0]})
-                    json_response = response.json()
-                    d[i[1]] = d.setdefault(i[1], []) + [[breeds_cats[json_response['breed']], float(json_response['probability'])]]
-            except Exception as ex:
-                print(ex)
-
-
-#        print(d)
-        commiters = tuple()
-        for key, value in d.items():
-            data = get_smoothed_pb(value)
-#            print(data)
-            data = dict(sorted(data.items(), key=lambda item: item[1]))
-#            print(data)
-            top1, prob1 = list(data.keys())[-1], list(data.values())[-1]
-            top2, prob2 = list(data.keys())[-2], list(data.values())[-2]
-            top3, prob3 = list(data.keys())[-3], list(data.values())[-3]
-            commiters += (top1, f'{top1};{top2};{top3}', f'{round(prob1 ** 2, 3)};{round(prob2 ** 2, 3)};{round(prob3 ** 2, 3)}', key),
-#            print((top1, f'{top1};{top2};{top3}', f'{round(prob1 ** 2, 3)};{round(prob2 ** 2, 3)};{round(prob3 ** 2, 3)}', key))
+            # проходим построчно по полученному запросу к бд
+            for i in cursor:
+                try:
+                    if i[2] == 1: # если это собака, то отправляем запрос в сервис, определяющий породы собак
+                        response = requests.post(link_dogs, json={'img_path': i[0]})
+                        json_response = response.json()
+                        d[i[1]] = d.setdefault(i[1], []) + [[breeds_dogs[json_response['breed']], float(json_response['probability'])]]
+                    elif i[2] == 2: # если это кошка, то отправляем запрос в сервис, определяющий породы кошек
+                        response = requests.post(link_cats, json={'img_path': i[0]})
+                        json_response = response.json()
+                        d[i[1]] = d.setdefault(i[1], []) + [[breeds_cats[json_response['breed']], float(json_response['probability'])]]
+                except Exception as ex:
+                    print(ex)
 
 
-#        print(commiters)
+    #        print(d)
+            commiters = tuple()
+            for key, value in d.items():
+                data = get_smoothed_pb(value)
+    #            print(data)
+                data = dict(sorted(data.items(), key=lambda item: item[1]))
+    #            print(data)
+                top1, prob1 = list(data.keys())[-1], list(data.values())[-1]
+                top2, prob2 = list(data.keys())[-2], list(data.values())[-2]
+                top3, prob3 = list(data.keys())[-3], list(data.values())[-3]
+                commiters += (top1, f'{top1};{top2};{top3}', f'{round(prob1 ** 2, 3)};{round(prob2 ** 2, 3)};{round(prob3 ** 2, 3)}', key),
+    #            print((top1, f'{top1};{top2};{top3}', f'{round(prob1 ** 2, 3)};{round(prob2 ** 2, 3)};{round(prob3 ** 2, 3)}', key))
 
-        cursor.close()
-        conn.close()
 
-        conn = psycopg2.connect(dbname=dbname, user=user,
-                                password=password, host=host, port=port)
+#            print(commiters)
 
-        # обращаемся к бд и меняем в таблице 'pets' значения 1 в колонке 'breed_id' на породу животного (полученную в результате работы ML-приложения)
-        # где pets.id равно второму значению каждого кортежа внутри result.
-        with conn:
-            cur = conn.cursor()
-            query = "update pets set breed_id = %s, top_breeds = %s, probability = %s where id = %s"
-            cur.executemany(query, commiters)
-            conn.commit()
+            cursor.close()
+            conn.close()
 
-        # закрываем соединение с бд
-        cursor.close()
-        conn.close()
+            conn = psycopg2.connect(dbname=dbname, user=user,
+                                    password=password, host=host, port=port)
 
-    # если во время выполнения блока кода try происходит ошибка, выводим её, спим 1 минуту, затем повторно запускаем программу
-    except Exception as e:
-        print(e)
+            # обращаемся к бд и меняем в таблице 'pets' значения 1 в колонке 'breed_id' на породу животного (полученную в результате работы ML-приложения)
+            # где pets.id равно второму значению каждого кортежа внутри result.
+            with conn:
+                cur = conn.cursor()
+                query = "update pets set breed_id = %s, top_breeds = %s, probability = %s where id = %s"
+                cur.executemany(query, commiters)
+                conn.commit()
 
-    # отправляем приложение спать на 10 минут, после чего опять повторяем его работу и ищем животных без указания породы.
-    time.sleep(60 * 10)
+            # закрываем соединение с бд
+            cursor.close()
+            conn.close()
+
+        # если во время выполнения блока кода try происходит ошибка, выводим её, спим 1 минуту, затем повторно запускаем программу
+        except Exception as e:
+            print(e)
+
+        # отправляем приложение спать на 10 минут, после чего опять повторяем его работу и ищем животных без указания породы.
+        time.sleep(60 * 10)
+
+if __name__ == '__main__':
+    get_breeds()

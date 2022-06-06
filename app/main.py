@@ -1,12 +1,12 @@
 from threading import Thread
+from animal_request import get_animal_types
+from animal_breed import get_breeds
 
 def types():
-    while True:
-        exec(open("animal_request.py", encoding='UTF-8').read())
+    get_animal_types()
 
 def breeds():
-    while True:
-        exec(open("animal_breed.py", encoding='UTF-8').read())
+    get_breeds()
 
 Thread(target=types).start()
 Thread(target=breeds).start()
