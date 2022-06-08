@@ -92,7 +92,8 @@ def get_breeds():
             d = {} # словарь для хранения результатов работы ML приложения. Ключ - id животного, значения в виде списка ответов ML по каждому животному
 
             # проходим построчно по полученному запросу к бд
-            for i in cursor:
+            for i in cursor.fetchall():
+                cursor.close()
                 try:
                     if i[2] == 1: # если это собака, то отправляем запрос в сервис, определяющий породы собак
                         response = requests.post(link_dogs, json={'img_path': i[0]})
@@ -106,7 +107,7 @@ def get_breeds():
                     print(ex)
 
 
-    #        print(d)
+#            print(d)
             commiters = tuple()
             for key, value in d.items():
                 data = get_smoothed_pb(value)
@@ -122,11 +123,10 @@ def get_breeds():
 
 #            print(commiters)
 
-            cursor.close()
-            conn.close()
+#            cursor.close()
 
-            conn = psycopg2.connect(dbname=dbname, user=user,
-                                    password=password, host=host, port=port)
+#            conn = psycopg2.connect(dbname=dbname, user=user,
+#                                    password=password, host=host, port=port)
 
             # обращаемся к бд и меняем в таблице 'pets' значения 1 в колонке 'breed_id' на породу животного (полученную в результате работы ML-приложения)
             # где pets.id равно второму значению каждого кортежа внутри result.
@@ -144,8 +144,12 @@ def get_breeds():
         except Exception as e:
             print(e)
 
-        # отправляем приложение спать на 10 минут, после чего опять повторяем его работу и ищем животных без указания породы.
-        time.sleep(60 * 10)
+        finally:
+            cursor.close()
+            conn.close()
+            # отправляем приложение спать на 10 минут, после чего опять повторяем его работу и ищем животных без указания породы.
+            time.sleep(60 * 10)
+
 
 if __name__ == '__main__':
     get_breeds()
