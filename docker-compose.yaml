@@ -3,8 +3,5 @@ services:
   app:
     build:
       context: .
-    command: python main.py
-#    volumes:
-#      - ./static:/usr/src/app/static
     ports:
       - 8888:8888
