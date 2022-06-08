@@ -82,10 +82,10 @@ def get_breeds():
             cursor = conn.cursor()
 
             # делаем запрос к бд, собираем ссылки на фото и id по всем животным из таблицы 'pets', у которых не указана порода (значение 1 в колонке 'breed_id')
-            cursor.execute("""SELECT images.external_path, pets.id, pets.animal_id FROM images 
+            cursor.execute("""SELECT images.static_path, pets.id, pets.animal_id FROM images 
                               join pets_images on images.id = pets_images.image_id 
                               join pets on pets_images.pet_id = pets.id
-                              where pets.breed_id = 1
+                              where pets.breed_id = 1 and pets.id between 100 and 110
                               order by pets.id
                               """)
 
@@ -99,6 +99,7 @@ def get_breeds():
                         response = requests.post(link_dogs, json={'img_path': i[0]})
                         json_response = response.json()
                         d[i[1]] = d.setdefault(i[1], []) + [[breeds_dogs[json_response['breed']], float(json_response['probability'])]]
+
                     elif i[2] == 2: # если это кошка, то отправляем запрос в сервис, определяющий породы кошек
                         response = requests.post(link_cats, json={'img_path': i[0]})
                         json_response = response.json()

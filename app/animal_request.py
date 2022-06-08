@@ -25,17 +25,19 @@ def get_animal_types():
             cursor = conn.cursor()
 
             # делаем запрос к бд, собираем ссылки на фото и id по всем животным из таблицы 'pets', в которых в колонке 'animal_id' стоит значение Null
-            cursor.execute("""SELECT images.external_path, pets.id FROM images 
+            cursor.execute("""SELECT images.static_path, pets.id FROM images 
                               join pets_images on images.id = pets_images.image_id 
                               join pets on pets_images.pet_id = pets.id
                               where pets.animal_id = 3
                               order by pets.id
                               """)
+            print(123)
 
             d = {}  # словарь для хранения результатов работы ML приложения. Ключ - id животного, значения в виде списка ответов ML по каждому животному
 
             # проходим построчно по полученному запросу к бд
             for i in cursor.fetchall():
+                print(i)
                 cursor.close()
 
                 #  отправляем ссылки с фото животных в ML-приложение для определения типа животного
