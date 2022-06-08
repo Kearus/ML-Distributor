@@ -31,13 +31,11 @@ def get_animal_types():
                               where pets.animal_id = 3
                               order by pets.id
                               """)
-            print(123)
 
             d = {}  # словарь для хранения результатов работы ML приложения. Ключ - id животного, значения в виде списка ответов ML по каждому животному
 
             # проходим построчно по полученному запросу к бд
             for i in cursor.fetchall():
-                print(i)
                 cursor.close()
 
                 #  отправляем ссылки с фото животных в ML-приложение для определения типа животного
@@ -50,9 +48,8 @@ def get_animal_types():
                     d[i[1]] = d.setdefault(i[1], []) + [animal_type[json_response['class_name']]]
                 except Exception as ex:
                     print(ex)
-#            print(d)
 
-    #        print(d)
+#            print(d)
 
             # проходим по словарю. Из пары ключ-значение вида 1776: [1, 2, 1, 2, 1, 1] создаём ключ-значение вида 1776: 1
             for key, value in d.items():
@@ -66,8 +63,6 @@ def get_animal_types():
                 result += (value, key),
 #            print(result)
 
-#            conn = psycopg2.connect(dbname=dbname, user=user,
-#                                    password=password, host=host, port=port)
 
             # обращаемся к бд и меняем в таблице 'pets' значения null в колонке 'animal_id' на категорию животного (полученную в результате работы ML-приложения)
             # где id.pets равно второму значению каждого кортежа внутри result.
@@ -81,7 +76,6 @@ def get_animal_types():
             cursor.close()
             conn.close()
 
-        # если во время выполнения блока кода try происходит ошибка, выводим её, спим 1 минуту, затем повторно запускаем программу
         except Exception as e:
             print(e)
 
@@ -90,7 +84,6 @@ def get_animal_types():
             conn.close()
             # отправляем приложение спать на 10 минут, после чего опять повторяем его работу и ищем животных без указания категории.
             time.sleep(60 * 10)
-
 
 #        raise HTTPException(500, str(e))
 

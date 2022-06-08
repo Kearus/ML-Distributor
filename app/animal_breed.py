@@ -85,7 +85,7 @@ def get_breeds():
             cursor.execute("""SELECT images.static_path, pets.id, pets.animal_id FROM images 
                               join pets_images on images.id = pets_images.image_id 
                               join pets on pets_images.pet_id = pets.id
-                              where pets.breed_id = 1 and pets.id between 100 and 110
+                              where pets.breed_id = 1
                               order by pets.id
                               """)
 
@@ -107,7 +107,6 @@ def get_breeds():
                 except Exception as ex:
                     print(ex)
 
-
 #            print(d)
             commiters = tuple()
             for key, value in d.items():
@@ -124,10 +123,6 @@ def get_breeds():
 
 #            print(commiters)
 
-#            cursor.close()
-
-#            conn = psycopg2.connect(dbname=dbname, user=user,
-#                                    password=password, host=host, port=port)
 
             # обращаемся к бд и меняем в таблице 'pets' значения 1 в колонке 'breed_id' на породу животного (полученную в результате работы ML-приложения)
             # где pets.id равно второму значению каждого кортежа внутри result.
